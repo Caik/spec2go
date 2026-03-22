@@ -91,7 +91,7 @@ func TestNew_BoundaryAge(t *testing.T) {
 
 	for _, tc := range cases {
 		result := isAdult.Evaluate(testCtx{Age: tc.age})
-		
+
 		if result.Passed() != tc.passes {
 			t.Errorf("age %d: Passed() = %v, want %v", tc.age, result.Passed(), tc.passes)
 		}
