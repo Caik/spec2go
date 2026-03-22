@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'pkg/**'
+      - 'examples/**'
+      - 'go.mod'
+      - 'go.sum'
+  pull_request:
+    branches: [main]
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Format
+        run: gofmt -s -w . && git diff --exit-code
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Mod tidy
+        run: go mod tidy && git diff --exit-code
+
+      - name: Mod verify
+        run: go mod download && go mod verify
+
+      - name: Build
+        run: go build ./...
+
+      - name: Test
+        run: go test ./... -v -race -count=1 -shuffle=on -coverprofile=coverage.txt
+
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: coverage.txt
+          retention-days: 7

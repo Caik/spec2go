@@ -1,0 +1,33 @@
+version: 2
+
+# spec2go is a library — no binaries to build or archive.
+# GoReleaser is used solely for GitHub Release creation with changelog.
+builds:
+  - skip: true
+
+changelog:
+  sort: asc
+  use: github
+  groups:
+    - title: Breaking Changes
+      regexp: '^.*(\(.+\))?!:|^BREAKING CHANGE:'
+      order: 0
+    - title: New Features
+      regexp: '^feat(\(.+\))?:'
+      order: 1
+    - title: Bug Fixes
+      regexp: '^fix(\(.+\))?:'
+      order: 2
+    - title: Performance
+      regexp: '^perf(\(.+\))?:'
+      order: 3
+    - title: Other Changes
+      order: 999
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - '^chore:'
+      - Merge pull request
+      - Merge branch

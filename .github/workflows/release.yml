@@ -1,0 +1,120 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  check-release:
+    name: Check if release needed
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.check.outputs.should_release }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check changed files
+        id: check
+        run: |
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          BLACKLIST_PATTERNS=(
+            ".*_test\.go$"
+            ".*\.md$"
+            "^\.github/"
+            "^examples/"
+          )
+
+          SHOULD_RELEASE="false"
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            MATCHES_BLACKLIST="false"
+            for pattern in "${BLACKLIST_PATTERNS[@]}"; do
+              if echo "$file" | grep -qE "$pattern"; then
+                MATCHES_BLACKLIST="true"
+                break
+              fi
+            done
+            if [ "$MATCHES_BLACKLIST" = "false" ]; then
+              echo "File '$file' triggers a release"
+              SHOULD_RELEASE="true"
+              break
+            fi
+          done <<< "$CHANGED_FILES"
+
+          echo "should_release=$SHOULD_RELEASE" >> $GITHUB_OUTPUT
+          if [ "$SHOULD_RELEASE" = "false" ]; then
+            echo "All changed files are non-releasable — skipping"
+          fi
+
+  ci:
+    name: CI
+    needs: check-release
+    if: needs.check-release.outputs.should_release == 'true'
+    uses: ./.github/workflows/ci.yml
+
+  tag:
+    name: Tag release
+    runs-on: ubuntu-latest
+    needs: [check-release, ci]
+    if: needs.check-release.outputs.should_release == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version bump from commits
+        id: bump
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"%s" HEAD)
+          else
+            COMMITS=$(git log --pretty=format:"%s" "${LAST_TAG}..HEAD")
+          fi
+
+          echo "Commits since $LAST_TAG:"
+          echo "$COMMITS"
+
+          if echo "$COMMITS" | grep -qE "^(feat|fix|refactor|perf)(\(.+\))?!:|^BREAKING CHANGE:"; then
+            echo "bump=major" >> $GITHUB_OUTPUT
+            echo "Detected: MAJOR"
+          elif echo "$COMMITS" | grep -qE "^feat(\(.+\))?:"; then
+            echo "bump=minor" >> $GITHUB_OUTPUT
+            echo "Detected: MINOR"
+          else
+            echo "bump=patch" >> $GITHUB_OUTPUT
+            echo "Detected: PATCH"
+          fi
+
+      - name: Calculate next version
+        id: version
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          VERSION="${LAST_TAG#v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+
+          case "${{ steps.bump.outputs.bump }}" in
+            major) NEXT="$((MAJOR + 1)).0.0" ;;
+            minor) NEXT="${MAJOR}.$((MINOR + 1)).0" ;;
+            patch) NEXT="${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
+          esac
+
+          echo "tag=v${NEXT}" >> $GITHUB_OUTPUT
+          echo "Next version: v${NEXT}"
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ steps.version.outputs.tag }}
+          git push origin ${{ steps.version.outputs.tag }}
