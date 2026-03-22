@@ -9,6 +9,7 @@ import (
 func TestPolicyResult_AllPassedTrue(t *testing.T) {
 	p := spec.NewPolicy[testCtx, testReason]().With(alwaysPass).With(isAdult)
 	result := p.EvaluateAll(testCtx{Age: 20})
+
 	if !result.AllPassed() {
 		t.Error("AllPassed() = false, want true")
 	}
@@ -17,6 +18,7 @@ func TestPolicyResult_AllPassedTrue(t *testing.T) {
 func TestPolicyResult_AllPassedFalse(t *testing.T) {
 	p := spec.NewPolicy[testCtx, testReason]().With(alwaysPass).With(alwaysFail)
 	result := p.EvaluateAll(testCtx{})
+
 	if result.AllPassed() {
 		t.Error("AllPassed() = true, want false")
 	}
@@ -25,8 +27,8 @@ func TestPolicyResult_AllPassedFalse(t *testing.T) {
 func TestPolicyResult_FailedResults(t *testing.T) {
 	p := spec.NewPolicy[testCtx, testReason]().With(isAdult).With(hasFunds).With(isVerified)
 	result := p.EvaluateAll(testCtx{Age: 16, Balance: 50, Verified: false})
-
 	failed := result.FailedResults()
+
 	if len(failed) != 3 {
 		t.Errorf("len(FailedResults()) = %d, want 3", len(failed))
 	}
@@ -44,8 +46,8 @@ func TestPolicyResult_FailedResults_EmptyWhenAllPass(t *testing.T) {
 func TestPolicyResult_FailureReasons(t *testing.T) {
 	p := spec.NewPolicy[testCtx, testReason]().With(isAdult).With(hasFunds)
 	result := p.EvaluateAll(testCtx{Age: 16, Balance: 50})
-
 	reasons := result.FailureReasons()
+
 	if len(reasons) != 2 {
 		t.Errorf("len(FailureReasons()) = %d, want 2", len(reasons))
 	}

@@ -49,11 +49,13 @@ func main() {
 	// --- Build composite specification ---
 	// Applicant is financially qualified if they have good credit OR (sufficient income AND is employed)
 	incomeAndEmployment, err := spec.AllOf("IncomeAndEmployment", incomeCheck, employmentCheck)
+
 	if err != nil {
 		panic(err)
 	}
 
 	financiallyQualified, err := spec.AnyOf("FinanciallyQualified", creditCheck, incomeAndEmployment)
+
 	if err != nil {
 		panic(err)
 	}
