@@ -49,7 +49,7 @@ func TestNew_Expression(t *testing.T) {
 
 func TestFunc_CustomExpression(t *testing.T) {
 	s := spec.Func[testCtx, testReason]{} // zero value — expression falls back to name
-	_ = s                                  // just verifying Func is an exported type
+	_ = s                                 // just verifying Func is an exported type
 
 	// Func with explicit expression
 	s2 := spec.New("AgeCheck", func(c testCtx) bool { return c.Age >= 18 }, tooYoung)
