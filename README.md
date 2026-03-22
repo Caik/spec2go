@@ -6,7 +6,7 @@ A Go implementation of the [Specification Pattern](https://en.wikipedia.org/wiki
 
 [![CI](https://github.com/caik/spec2go/actions/workflows/ci.yml/badge.svg)](https://github.com/caik/spec2go/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/caik/spec2go/graph/badge.svg)](https://codecov.io/gh/caik/spec2go)
-[![Go Reference](https://pkg.go.dev/badge/github.com/caik/spec2go/pkg/spec.svg)](https://pkg.go.dev/github.com/caik/spec2go/pkg/spec)
+[![Go Reference](https://pkg.go.dev/badge/github.com/caik/spec2go/pkg/spec.svg)](https://pkg.go.dev/github.com/caik/spec2go)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Go](https://img.shields.io/badge/Go-1.21+-blue.svg)](https://go.dev)
 
