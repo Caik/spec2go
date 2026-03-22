@@ -149,7 +149,10 @@ func TestPolicy_StringMultipleSpecs(t *testing.T) {
 }
 
 func TestPolicy_StringWithComposite(t *testing.T) {
-	financiallyQualified := spec.AnyOf("FinanciallyQualified", hasFunds, isVerified)
+	financiallyQualified, err := spec.AnyOf("FinanciallyQualified", hasFunds, isVerified)
+	if err != nil {
+		t.Fatal(err)
+	}
 	p := spec.NewPolicy[testCtx, testReason]().With(isAdult).With(financiallyQualified)
 	want := "(IsAdult AND (HasFunds OR IsVerified))"
 	if p.String() != want {
