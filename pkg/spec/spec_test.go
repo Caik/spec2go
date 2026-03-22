@@ -22,7 +22,9 @@ func TestNew_FailsWhenPredicateFalse(t *testing.T) {
 	if result.Passed() {
 		t.Errorf("expected fail for age %d", ctx.Age)
 	}
+
 	reasons := result.FailureReasons()
+
 	if len(reasons) != 1 || reasons[0] != tooYoung {
 		t.Errorf("FailureReasons() = %v, want [%v]", reasons, tooYoung)
 	}
@@ -30,6 +32,7 @@ func TestNew_FailsWhenPredicateFalse(t *testing.T) {
 
 func TestNew_ResultName(t *testing.T) {
 	result := isAdult.Evaluate(testCtx{Age: 20})
+
 	if result.Name() != "IsAdult" {
 		t.Errorf("result.Name() = %q, want %q", result.Name(), "IsAdult")
 	}
@@ -53,6 +56,7 @@ func TestFunc_CustomExpression(t *testing.T) {
 
 	// Func with explicit expression
 	s2 := spec.New("AgeCheck", func(c testCtx) bool { return c.Age >= 18 }, tooYoung)
+
 	if s2.Expression() != "AgeCheck" {
 		t.Errorf("Expression() = %q, want %q", s2.Expression(), "AgeCheck")
 	}
@@ -62,11 +66,14 @@ func TestNamedSpec_ImplementsSpecification(t *testing.T) {
 	type mySpec struct {
 		spec.NamedSpec[testCtx, testReason]
 	}
+
 	// NamedSpec must satisfy Name() and Expression() so a custom struct only needs Evaluate.
 	n := spec.NamedSpec[testCtx, testReason]{N: "CustomSpec"}
+
 	if n.Name() != "CustomSpec" {
 		t.Errorf("Name() = %q, want %q", n.Name(), "CustomSpec")
 	}
+
 	if n.Expression() != "CustomSpec" {
 		t.Errorf("Expression() = %q, want %q", n.Expression(), "CustomSpec")
 	}
@@ -81,8 +88,10 @@ func TestNew_BoundaryAge(t *testing.T) {
 		{18, true},
 		{19, true},
 	}
+
 	for _, tc := range cases {
 		result := isAdult.Evaluate(testCtx{Age: tc.age})
+
 		if result.Passed() != tc.passes {
 			t.Errorf("age %d: Passed() = %v, want %v", tc.age, result.Passed(), tc.passes)
 		}

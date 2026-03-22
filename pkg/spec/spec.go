@@ -22,16 +22,21 @@ type Func[T any, R comparable] struct {
 }
 
 // Evaluate implements [Specification].
-func (f Func[T, R]) Evaluate(ctx T) SpecificationResult[R] { return f.fn(ctx) }
+func (f Func[T, R]) Evaluate(ctx T) SpecificationResult[R] {
+	return f.fn(ctx)
+}
 
 // Name implements [Specification].
-func (f Func[T, R]) Name() string { return f.name }
+func (f Func[T, R]) Name() string {
+	return f.name
+}
 
 // Expression implements [Specification]. Falls back to Name if no expression was set.
 func (f Func[T, R]) Expression() string {
 	if f.expression != "" {
 		return f.expression
 	}
+
 	return f.name
 }
 
@@ -44,6 +49,7 @@ func New[T any, R comparable](name string, predicate func(T) bool, reason R) Spe
 			if predicate(ctx) {
 				return Pass[R](name)
 			}
+
 			return Fail(name, reason)
 		},
 	}
@@ -66,7 +72,11 @@ type NamedSpec[T any, R comparable] struct {
 }
 
 // Name implements [Specification].
-func (n NamedSpec[T, R]) Name() string { return n.N }
+func (n NamedSpec[T, R]) Name() string {
+	return n.N
+}
 
 // Expression implements [Specification].
-func (n NamedSpec[T, R]) Expression() string { return n.N }
+func (n NamedSpec[T, R]) Expression() string {
+	return n.N
+}

@@ -8,18 +8,24 @@ type SpecificationResult[R comparable] struct {
 }
 
 // Name returns the name of the specification that produced this result.
-func (r SpecificationResult[R]) Name() string { return r.name }
+func (r SpecificationResult[R]) Name() string {
+	return r.name
+}
 
 // Passed reports whether the specification passed (no failure reasons).
-func (r SpecificationResult[R]) Passed() bool { return r.failureReasons == nil }
+func (r SpecificationResult[R]) Passed() bool {
+	return r.failureReasons == nil
+}
 
 // FailureReasons returns a copy of the failure reasons, or nil if the specification passed.
 func (r SpecificationResult[R]) FailureReasons() []R {
 	if r.failureReasons == nil {
 		return nil
 	}
+
 	out := make([]R, len(r.failureReasons))
 	copy(out, r.failureReasons)
+
 	return out
 }
 
@@ -32,5 +38,6 @@ func Pass[R comparable](name string) SpecificationResult[R] {
 func Fail[R comparable](name string, reasons ...R) SpecificationResult[R] {
 	r := make([]R, len(reasons))
 	copy(r, reasons)
+
 	return SpecificationResult[R]{name: name, failureReasons: r}
 }

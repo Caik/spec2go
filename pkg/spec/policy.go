@@ -26,13 +26,16 @@ func (p *Policy[T, R]) With(s Specification[T, R]) *Policy[T, R] {
 // Use this when you only need to know whether a policy passes and want minimal evaluation.
 func (p *Policy[T, R]) EvaluateFailFast(ctx T) PolicyResult[R] {
 	var results []SpecificationResult[R]
+
 	for _, s := range p.specs {
 		res := s.Evaluate(ctx)
 		results = append(results, res)
+
 		if !res.Passed() {
 			return newPolicyResult(false, results)
 		}
 	}
+
 	return newPolicyResult(true, results)
 }
 
@@ -41,13 +44,16 @@ func (p *Policy[T, R]) EvaluateFailFast(ctx T) PolicyResult[R] {
 func (p *Policy[T, R]) EvaluateAll(ctx T) PolicyResult[R] {
 	allPassed := true
 	results := make([]SpecificationResult[R], 0, len(p.specs))
+
 	for _, s := range p.specs {
 		res := s.Evaluate(ctx)
 		results = append(results, res)
+
 		if !res.Passed() {
 			allPassed = false
 		}
 	}
+
 	return newPolicyResult(allPassed, results)
 }
 
@@ -57,9 +63,12 @@ func (p *Policy[T, R]) String() string {
 	if len(p.specs) == 0 {
 		return "()"
 	}
+
 	parts := make([]string, len(p.specs))
+
 	for i, s := range p.specs {
 		parts[i] = s.Expression()
 	}
+
 	return fmt.Sprintf("(%s)", strings.Join(parts, " AND "))
 }
