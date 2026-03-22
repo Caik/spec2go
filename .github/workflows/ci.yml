@@ -51,6 +51,17 @@ jobs:
       - name: Test
         run: go test ./... -v -race -count=1 -shuffle=on -coverprofile=coverage.txt
 
+      - name: Check coverage threshold
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          COVERAGE=$(go tool cover -func=coverage.txt | tail -1 | awk '{print $3}' | tr -d '%')
+          THRESHOLD=95
+          echo "Coverage: ${COVERAGE}%  Threshold: ${THRESHOLD}%"
+          if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
+            echo "::error::Coverage ${COVERAGE}% is below threshold ${THRESHOLD}%"
+            exit 1
+          fi
+
       - name: Upload coverage to Codecov
         if: matrix.os == 'ubuntu-latest'
         uses: codecov/codecov-action@v5
